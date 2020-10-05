@@ -1,8 +1,10 @@
 {{ define "content" }}
 
-<form role="form" action="/artist/create" method="piece">
+<form role="form" action="/artist/create" method="post" enctype="multipart/form-data">
   <div class="lead">Create a new Artist</div>
   <div class="form-group">
+    <label for="profilePic">Display Picture</label>
+    <input type="file" name="profilePic" id="profilePic"><br>
     <label for="firstName">First Name</label>
     <input class="form-control" name="firstName" id="firstName">
     <br/>

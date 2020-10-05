@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/msoerjanto/pikaso/application"
 	"github.com/msoerjanto/pikaso/data"
 )
 
@@ -18,8 +19,7 @@ func newArtist(writer http.ResponseWriter, request *http.Request) {
 	}
 }
 
-// POST /signup
-// Create the user account
+// Create the artist
 func createArtist(writer http.ResponseWriter, request *http.Request) {
 	sess, err := session(writer, request)
 	if err != nil {
@@ -33,9 +33,19 @@ func createArtist(writer http.ResponseWriter, request *http.Request) {
 		if err != nil {
 			danger(err, "Cannot get user from session")
 		}
-		firstName := request.FormValue("firstName")
-		lastName := request.FormValue("lastName")
-		description := request.FormValue("description")
+		ppFile, ppHeader, err := request.FormFile("profilePic")
+
+		// Upload the image to S3
+		application.UploadMultiPartFileToS3(ppFile, ppHeader, err)
+
+		// Create the artist
+		firstName := request.PostFormValue("firstName")
+		lastName := request.PostFormValue("lastName")
+		description := request.PostFormValue("description")
+		fmt.Println(ppFile)
+		fmt.Println(ppHeader)
+		fmt.Println(err)
+
 		if _, err := user.CreateArtist(firstName, lastName, description); err != nil {
 			danger(err, "Cannot create artist")
 		}
@@ -76,8 +86,8 @@ func postPiece(writer http.ResponseWriter, request *http.Request) {
 		if err != nil {
 			danger(err, "Cannot get user from session")
 		}
-		body := request.FormValue("body")
-		uuid := request.FormValue("uuid")
+		body := request.PostFormValue("body")
+		uuid := request.PostFormValue("uuid")
 		artist, err := data.ArtistByUUID(uuid)
 		if err != nil {
 			error_message(writer, request, "Cannot read artist")
