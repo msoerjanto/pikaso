@@ -27,6 +27,7 @@ create table artists (
   first_name  text,
   last_name   text,
   description text,
+  profile_pic text,
   user_id     integer references users(id),
   created_at  timestamp not null       
 );

@@ -36,7 +36,7 @@ func createArtist(writer http.ResponseWriter, request *http.Request) {
 		ppFile, ppHeader, err := request.FormFile("profilePic")
 
 		// Upload the image to S3
-		application.UploadMultiPartFileToS3(ppFile, ppHeader, err)
+		profilePic := application.UploadMultiPartFileToS3(ppFile, ppHeader, err, "artist")
 
 		// Create the artist
 		firstName := request.PostFormValue("firstName")
@@ -46,7 +46,7 @@ func createArtist(writer http.ResponseWriter, request *http.Request) {
 		fmt.Println(ppHeader)
 		fmt.Println(err)
 
-		if _, err := user.CreateArtist(firstName, lastName, description); err != nil {
+		if _, err := user.CreateArtist(firstName, lastName, description, profilePic); err != nil {
 			danger(err, "Cannot create artist")
 		}
 		http.Redirect(writer, request, "/", 302)

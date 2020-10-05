@@ -14,7 +14,7 @@ import (
 )
 
 // UploadMultiPartFileToS3 Uploads a multipart file to S3
-func UploadMultiPartFileToS3(file multipart.File, header *multipart.FileHeader, err error) string {
+func UploadMultiPartFileToS3(file multipart.File, header *multipart.FileHeader, err error, association string) string {
 	if file == nil {
 		return ""
 	}
@@ -32,7 +32,7 @@ func UploadMultiPartFileToS3(file multipart.File, header *multipart.FileHeader, 
 	}
 
 	// Upload
-	fileName, err := AddFileToS3(s, file, header)
+	fileName, err := AddFileToS3(s, file, header, association)
 	if err != nil {
 		log.Fatal(err)
 	} else {
@@ -42,14 +42,14 @@ func UploadMultiPartFileToS3(file multipart.File, header *multipart.FileHeader, 
 }
 
 // AddFileToS3 uploads file to s3
-func AddFileToS3(s *session.Session, file multipart.File, header *multipart.FileHeader) (string, error) {
+func AddFileToS3(s *session.Session, file multipart.File, header *multipart.FileHeader, association string) (string, error) {
 	// get file size and read file content into buffer
 	size := header.Size
 	buffer := make([]byte, size)
 	file.Read(buffer)
 
 	// create unique file name for the file
-	tempFileName := "piece/" + bson.NewObjectId().Hex() + filepath.Ext(header.Filename)
+	tempFileName := association + "/" + bson.NewObjectId().Hex() + filepath.Ext(header.Filename)
 
 	_, err := s3.New(s).PutObject(&s3.PutObjectInput{
 		Bucket:               aws.String("pikaso-bucket"),

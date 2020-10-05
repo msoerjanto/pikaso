@@ -11,6 +11,7 @@ type Artist struct {
 	FirstName   string
 	LastName    string
 	Description string
+	ProfilePic  string
 	UserId      int
 	CreatedAt   time.Time
 }
@@ -53,15 +54,15 @@ func (artist *Artist) Pieces() (pieces []Piece, err error) {
 }
 
 // Create a new artist
-func (user *User) CreateArtist(firstName string, lastName string, description string) (conv Artist, err error) {
-	statement := "insert into artists (uuid, first_name, last_name, description, user_id, created_at) values ($1, $2, $3, $4, $5, $6) returning id, uuid, first_name, last_name, description, user_id, created_at"
+func (user *User) CreateArtist(firstName string, lastName string, description string, profilePic string) (conv Artist, err error) {
+	statement := "insert into artists (uuid, first_name, last_name, description, profile_pic, user_id, created_at) values ($1, $2, $3, $4, $5, $6, $7) returning id, uuid, first_name, last_name, description, profile_pic, user_id, created_at"
 	stmt, err := Db.Prepare(statement)
 	if err != nil {
 		return
 	}
 	defer stmt.Close()
 	// use QueryRow to return a row and scan the returned id into the Session struct
-	err = stmt.QueryRow(createUUID(), firstName, lastName, description, user.Id, time.Now()).Scan(&conv.Id, &conv.Uuid, &conv.FirstName, &conv.LastName, &conv.Description, &conv.UserId, &conv.CreatedAt)
+	err = stmt.QueryRow(createUUID(), firstName, lastName, description, profilePic, user.Id, time.Now()).Scan(&conv.Id, &conv.Uuid, &conv.FirstName, &conv.LastName, &conv.Description, &conv.ProfilePic, &conv.UserId, &conv.CreatedAt)
 	return
 }
 
@@ -80,13 +81,13 @@ func (user *User) CreatePiece(conv Artist, body string) (piece Piece, err error)
 
 // Get all artists in the database and returns it
 func Artists() (artists []Artist, err error) {
-	rows, err := Db.Query("SELECT id, uuid, first_name, last_name, description, user_id, created_at FROM artists ORDER BY created_at DESC")
+	rows, err := Db.Query("SELECT id, uuid, first_name, last_name, description, profile_pic, user_id, created_at FROM artists ORDER BY created_at DESC")
 	if err != nil {
 		return
 	}
 	for rows.Next() {
 		conv := Artist{}
-		if err = rows.Scan(&conv.Id, &conv.Uuid, &conv.FirstName, &conv.LastName, &conv.Description, &conv.UserId, &conv.CreatedAt); err != nil {
+		if err = rows.Scan(&conv.Id, &conv.Uuid, &conv.FirstName, &conv.LastName, &conv.Description, &conv.ProfilePic, &conv.UserId, &conv.CreatedAt); err != nil {
 			return
 		}
 		artists = append(artists, conv)
@@ -98,8 +99,8 @@ func Artists() (artists []Artist, err error) {
 // Get a artist by the UUID
 func ArtistByUUID(uuid string) (conv Artist, err error) {
 	conv = Artist{}
-	err = Db.QueryRow("SELECT id, uuid, first_name, last_name, description, user_id, created_at FROM artists WHERE uuid = $1", uuid).
-		Scan(&conv.Id, &conv.Uuid, &conv.FirstName, &conv.LastName, &conv.Description, &conv.UserId, &conv.CreatedAt)
+	err = Db.QueryRow("SELECT id, uuid, first_name, last_name, description, profile_pic, user_id, created_at FROM artists WHERE uuid = $1", uuid).
+		Scan(&conv.Id, &conv.Uuid, &conv.FirstName, &conv.LastName, &conv.Description, &conv.ProfilePic, &conv.UserId, &conv.CreatedAt)
 	return
 }
 
